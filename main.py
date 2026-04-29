@@ -122,7 +122,7 @@ class RegisterWindow(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(15)
         
-        title = QLabel("📝 Регистрация")
+        title = QLabel("Регистрация")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet("font-size: 20px; font-weight: bold;")
         layout.addWidget(title)
