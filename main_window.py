@@ -62,7 +62,7 @@ class MainWindow(QWidget):
         top_frame = QFrame()
         top_layout = QHBoxLayout()
         
-        welcome_label = QLabel(f"👤 Здравей, {self.username}!")
+        welcome_label = QLabel(f"Здравей, {self.username}!")
         welcome_label.setStyleSheet("font-size: 16px; font-weight: bold;")
         
         self.logout_btn = QPushButton("Изход")
@@ -84,7 +84,7 @@ class MainWindow(QWidget):
         search_layout = QHBoxLayout()
         
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("🔍 Въведи дума или фраза за търсене...")
+        self.search_input.setPlaceholderText("Въведи дума или фраза за търсене...")
         self.search_input.returnPressed.connect(self.search)
         
         self.search_btn = QPushButton("Търси")
@@ -106,13 +106,13 @@ class MainWindow(QWidget):
         
         bottom_layout = QHBoxLayout()
         
-        self.index_btn = QPushButton("📁 Индексирай PDF папка")
+        self.index_btn = QPushButton("Индексирай PDF папка")
         self.index_btn.clicked.connect(self.index_pdfs)
         
-        self.my_files_btn = QPushButton("📚 Моите файлове")
+        self.my_files_btn = QPushButton("Моите файлове")
         self.my_files_btn.clicked.connect(self.show_my_files)
 
-        self.delete_btn = QPushButton("🗑 Изтрий файл")
+        self.delete_btn = QPushButton("Изтрий файл")
         self.delete_btn.clicked.connect(self.delete_file)
         self.delete_btn.setStyleSheet("background-color: #c0392b;")
         bottom_layout.addWidget(self.delete_btn)
@@ -132,16 +132,16 @@ class MainWindow(QWidget):
             return
         
         self.results_text.clear()
-        self.results_text.append(f"🔍 Търсене на: '{query}'\n")
+        self.results_text.append(f"Търсене на: '{query}'\n")
         self.results_text.append("-" * 50)
         
         results = database.search_words(self.user_id, query)
         
         if not results:
-            self.results_text.append("\n❌ Няма намерени резултати.")
-            self.results_text.append("\n💡 Съвети:")
-            self.results_text.append("   • Увери се, че си индексирал PDF файлове (бутон 'Индексирай PDF папка')")
-            self.results_text.append("   • Провери дали думата е написана правилно")
+            self.results_text.append("\nНяма намерени резултати.")
+            self.results_text.append("\nСъвети:")
+            self.results_text.append("   -Увери се, че си индексирал PDF файлове (бутон 'Индексирай PDF папка')")
+            self.results_text.append("   -Провери дали думата е написана правилно")
             return
         
         files_dict = {}
@@ -151,11 +151,11 @@ class MainWindow(QWidget):
             if page_num not in files_dict[filename]:
                 files_dict[filename].append(page_num)
         
-        self.results_text.append(f"\n✅ Намерени резултати в {len(files_dict)} файла:\n")
+        self.results_text.append(f"\nНамерени резултати в {len(files_dict)} файла:\n")
         
         for filename, pages in files_dict.items():
             pages_str = ", ".join([f"стр. {p}" for p in sorted(pages)])
-            self.results_text.append(f"📄 **{filename}**")
+            self.results_text.append(f"**{filename}**")
             self.results_text.append(f"   → {pages_str}")
             self.results_text.append("")
     
@@ -191,7 +191,7 @@ class MainWindow(QWidget):
         
         if successful > 0:
             self.results_text.clear()
-            self.results_text.append(f"✅ Успешно индексирани {successful} PDF файла!")
+            self.results_text.append(f"Успешно индексирани {successful} PDF файла!")
             self.results_text.append(f"\nСега може да търсиш в тях с полето за търсене горе.")
     
     def show_my_files(self):
@@ -205,7 +205,7 @@ class MainWindow(QWidget):
             )
             return
         
-        message = "📚 Индексирани файлове:\n\n" + "\n".join([f"• {f}" for f in files])
+        message = "Индексирани файлове:\n\n" + "\n".join([f"• {f}" for f in files])
         QMessageBox.information(self, "Моите файлове", message)
     
     def delete_file(self):
@@ -250,7 +250,7 @@ class MainWindow(QWidget):
         reply = QMessageBox.question(
             self,
             "Потвърди изтриване",
-            f"Сигурен ли си, че искаш да изтриеш:\n\n📄 {filename}\n\nСлед това няма да можеш да търсиш в този файл, докато не го индексираш отново.",
+            f"Сигурен ли си, че искаш да изтриеш:\n\n{filename}\n\nСлед това няма да можеш да търсиш в този файл, докато не го индексираш отново.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No
         )
