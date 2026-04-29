@@ -2,7 +2,8 @@ import sys
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
     QLineEdit, QPushButton, QTextEdit, QFrame,
-    QFileDialog, QMessageBox, QProgressDialog, QApplication
+    QFileDialog, QMessageBox, QProgressDialog, QApplication,
+    QDialog, QComboBox, QDialogButtonBox
 )
 from PyQt6.QtCore import Qt
 import database
@@ -58,7 +59,6 @@ class MainWindow(QWidget):
         main_layout.setSpacing(15)
         main_layout.setContentsMargins(20, 20, 20, 20)
         
-        # Горна лента с потребителско име и бутон за изход
         top_frame = QFrame()
         top_layout = QHBoxLayout()
         
@@ -75,13 +75,11 @@ class MainWindow(QWidget):
         top_frame.setLayout(top_layout)
         main_layout.addWidget(top_frame)
         
-        # Разделител
         separator = QFrame()
         separator.setFrameShape(QFrame.Shape.HLine)
         separator.setStyleSheet("background-color: #3c3c3c;")
         main_layout.addWidget(separator)
         
-        # Секция за търсене
         search_frame = QFrame()
         search_layout = QHBoxLayout()
         
@@ -97,7 +95,6 @@ class MainWindow(QWidget):
         search_frame.setLayout(search_layout)
         main_layout.addWidget(search_frame)
         
-        # Резултати от търсенето
         results_label = QLabel("📄 Резултати от търсенето:")
         results_label.setStyleSheet("font-size: 14px; font-weight: bold; margin-top: 10px;")
         main_layout.addWidget(results_label)
@@ -107,7 +104,6 @@ class MainWindow(QWidget):
         self.results_text.setPlaceholderText("Тук ще се покажат резултатите...")
         main_layout.addWidget(self.results_text, 1)
         
-        # Долни бутони
         bottom_layout = QHBoxLayout()
         
         self.index_btn = QPushButton("📁 Индексирай PDF папка")
@@ -118,7 +114,7 @@ class MainWindow(QWidget):
 
         self.delete_btn = QPushButton("🗑 Изтрий файл")
         self.delete_btn.clicked.connect(self.delete_file)
-        self.delete_btn.setStyleSheet("background-color: #c0392b;")  # червен цвят за опасни действия
+        self.delete_btn.setStyleSheet("background-color: #c0392b;")
         bottom_layout.addWidget(self.delete_btn)
         
         bottom_layout.addWidget(self.index_btn)
@@ -130,7 +126,6 @@ class MainWindow(QWidget):
         self.setLayout(main_layout)
     
     def search(self):
-        """Търси в индексираните PDF-и"""
         query = self.search_input.text().strip()
         if not query:
             QMessageBox.warning(self, "Грешка", "Моля, въведи какво да търся!")
@@ -149,7 +144,6 @@ class MainWindow(QWidget):
             self.results_text.append("   • Провери дали думата е написана правилно")
             return
         
-        # Групиране на резултатите по файл
         files_dict = {}
         for filename, page_num in results:
             if filename not in files_dict:
@@ -166,7 +160,6 @@ class MainWindow(QWidget):
             self.results_text.append("")
     
     def index_pdfs(self):
-        """Отваря диалог за избор на папка с PDF-и и ги индексира"""
         folder = QFileDialog.getExistingDirectory(
             self, 
             "Избери папка с PDF файлове", 
@@ -175,7 +168,6 @@ class MainWindow(QWidget):
         if not folder:
             return
         
-        # Диалог за прогреса
         progress = QProgressDialog("Индексиране на PDF файлове...", "Отказ", 0, 100, self)
         progress.setWindowTitle("Моля, изчакайте")
         progress.setWindowModality(Qt.WindowModality.WindowModal)
@@ -186,7 +178,7 @@ class MainWindow(QWidget):
             percent = int((current / total) * 100)
             progress.setLabelText(f"Обработвам: {filename}\n({current} от {total})")
             progress.setValue(percent)
-            QApplication.processEvents()  # обновява интерфейса
+            QApplication.processEvents()
         
         successful, failed, message = index_pdf_folder(
             folder, 
@@ -203,7 +195,6 @@ class MainWindow(QWidget):
             self.results_text.append(f"\nСега може да търсиш в тях с полето за търсене горе.")
     
     def show_my_files(self):
-        """Показва кои PDF-и са индексирани от този потребител"""
         files = database.get_user_files(self.user_id)
         
         if not files:
@@ -218,7 +209,6 @@ class MainWindow(QWidget):
         QMessageBox.information(self, "Моите файлове", message)
     
     def delete_file(self):
-        """Отваря диалог за избор на файл за изтриване"""
         files = database.get_user_files(self.user_id)
         
         if not files:
@@ -229,9 +219,6 @@ class MainWindow(QWidget):
             )
             return
         
-        # Създаваме диалогов прозорец с избор
-        from PyQt6.QtWidgets import QDialog, QVBoxLayout, QComboBox, QDialogButtonBox
-        
         dialog = QDialog(self)
         dialog.setWindowTitle("Изтриване на файл")
         dialog.setGeometry(450, 350, 400, 150)
@@ -239,19 +226,15 @@ class MainWindow(QWidget):
         
         layout = QVBoxLayout()
         
-        # Добавяме описание
-        from PyQt6.QtWidgets import QLabel
         label = QLabel("Избери файл за изтриване от индекса:")
         layout.addWidget(label)
         
-        # Падащо меню с файловете
         combo = QComboBox()
         combo.addItems(files)
         layout.addWidget(combo)
         
         layout.addSpacing(20)
         
-        # Бутони за OK/Cancel
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(dialog.accept)
         buttons.rejected.connect(dialog.reject)
@@ -259,14 +242,11 @@ class MainWindow(QWidget):
         
         dialog.setLayout(layout)
         
-        # Ако потребителят натисне OK
         if dialog.exec() == QDialog.DialogCode.Accepted:
             selected_file = combo.currentText()
             self.confirm_delete(selected_file)
     
-
     def confirm_delete(self, filename):
-        """Показва диалог за потвърждение преди изтриване"""
         reply = QMessageBox.question(
             self,
             "Потвърди изтриване",
@@ -280,7 +260,6 @@ class MainWindow(QWidget):
             
             if success:
                 QMessageBox.information(self, "Успех", message)
-                # Изчистваме резултатите, ако показваха нещо от този файл
                 self.results_text.clear()
                 self.results_text.append(f"Файлът '{filename}' беше изтрит от индекса.")
                 self.results_text.append(f"Изтрити {count} записа (уникални думи).")
@@ -288,7 +267,6 @@ class MainWindow(QWidget):
                 QMessageBox.warning(self, "Грешка", message)
         
     def logout(self):
-        """Изход от профила - връщане към прозореца за вход"""
         self.close()
         from main import LoginWindow
         self.login_window = LoginWindow()

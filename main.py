@@ -46,29 +46,24 @@ class LoginWindow(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(15)
         
-        # Заглавие
         title = QLabel("📄 PDF Търсачка")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet("font-size: 24px; font-weight: bold; margin-bottom: 20px;")
         layout.addWidget(title)
         
-        # Поле за потребител
         self.username_input = QLineEdit()
         self.username_input.setPlaceholderText("Потребителско име")
         layout.addWidget(self.username_input)
         
-        # Поле за парола
         self.password_input = QLineEdit()
         self.password_input.setPlaceholderText("Парола")
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
         layout.addWidget(self.password_input)
         
-        # Бутон за вход
         self.login_btn = QPushButton("Вход")
         self.login_btn.clicked.connect(self.login)
         layout.addWidget(self.login_btn)
         
-        # Бутон за регистрация
         self.register_btn = QPushButton("Нямаш акаунт? Регистрация")
         self.register_btn.setStyleSheet("background-color: #3c3c3c;")
         self.register_btn.clicked.connect(self.open_register)
@@ -177,7 +172,7 @@ class RegisterWindow(QWidget):
             QMessageBox.warning(self, "Грешка", message)
 
 if __name__ == "__main__":
-    database.init_database()  # създава базата данни при първо стартиране
+    database.init_database()
     app = QApplication(sys.argv)
     window = LoginWindow()
     window.show()

@@ -4,11 +4,9 @@ import bcrypt
 DB_NAME = "pdf_search.db"
 
 def init_database():
-    """Създава таблиците при първо стартиране"""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # Таблица за потребителите
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,7 +15,6 @@ def init_database():
         )
     ''')
     
-    # Таблица за индекса на PDF (засега празна, ще я разширим после)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS pdf_index (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,15 +31,12 @@ def init_database():
     print("Базата данни е инициализирана.")
 
 def hash_password(password):
-    """Хешира парола с bcrypt"""
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 def check_password(password, password_hash):
-    """Проверява дали паролата съвпада с хеша"""
     return bcrypt.checkpw(password.encode(), password_hash.encode())
 
 def register_user(username, password):
-    """Регистрира нов потребител"""
     try:
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
@@ -60,7 +54,6 @@ def register_user(username, password):
         return False, f"Грешка: {e}"
 
 def login_user(username, password):
-    """Проверява дали потребителят съществува и паролата е вярна"""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute(
@@ -74,10 +67,7 @@ def login_user(username, password):
         return True, "Успешен вход!"
     return False, "Грешно потребителско име или парола."
 
-# ========== НОВИ ФУНКЦИИ ЗА PDF ИНДЕКСА ==========
-
 def get_user_id(username):
-    """Връща ID на потребител по username"""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
@@ -86,7 +76,6 @@ def get_user_id(username):
     return result[0] if result else None
 
 def clear_user_index(user_id):
-    """Изчиства целия индекс на даден потребител"""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM pdf_index WHERE user_id = ?", (user_id,))
@@ -94,7 +83,6 @@ def clear_user_index(user_id):
     conn.close()
 
 def add_word_to_index(user_id, filename, page_number, word):
-    """Добавя една дума в индекса"""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("""
@@ -105,14 +93,9 @@ def add_word_to_index(user_id, filename, page_number, word):
     conn.close()
 
 def search_words(user_id, search_term):
-    """
-    Търси дадена дума в индекса на потребителя.
-    Връща списък от tuples: (filename, page_number)
-    """
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # Търси точна дума или дума, която започва с търсения термин
     cursor.execute("""
         SELECT DISTINCT filename, page_number 
         FROM pdf_index 
@@ -125,7 +108,6 @@ def search_words(user_id, search_term):
     return results
 
 def get_user_files(user_id):
-    """Връща списък с уникалните файлове, индексирани от потребителя"""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("""
@@ -142,7 +124,6 @@ def delete_file_from_index(user_id, filename):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # Първо проверяваме колко записа ще се изтрият
     cursor.execute(
         "SELECT COUNT(*) FROM pdf_index WHERE user_id = ? AND filename = ?",
         (user_id, filename)
@@ -153,7 +134,6 @@ def delete_file_from_index(user_id, filename):
         conn.close()
         return False, 0, f"Файлът '{filename}' не е намерен в индекса."
     
-    # Изтриваме записите
     cursor.execute(
         "DELETE FROM pdf_index WHERE user_id = ? AND filename = ?",
         (user_id, filename)
